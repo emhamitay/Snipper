@@ -1,10 +1,11 @@
+// בעה"י
 "use client"
 
 import { useState, useMemo } from "react"
 import { Search, Filter } from "lucide-react"
-import { NavbarDashboard } from "@/components/navbar-dashboard"
-import { SnippetCard } from "@/components/snippet-card"
-import { EmptyState } from "@/components/empty-state"
+import { NavbarDashboard } from "@/components/vercel/navbar-dashboard"
+import { SnippetCard } from "@/components/vercel/snippet-card"
+import { EmptyState } from "@/components/vercel/empty-state"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { mockSnippets, languages } from "@/lib/mock-data"

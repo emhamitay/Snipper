@@ -1,9 +1,9 @@
-"use client"
+// בעה"י
 
 import { use } from "react"
-import { NavbarPublic } from "@/components/navbar-public"
-import { SnippetCard } from "@/components/snippet-card"
-import { EmptyState } from "@/components/empty-state"
+import { NavbarPublic } from "@/components/vercel/navbar-public"
+import { SnippetCard } from "@/components/vercel/snippet-card"
+import { EmptyState } from "@/components/vercel/empty-state"
 import { mockUser, publicSnippets } from "@/lib/mock-data"
 
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {

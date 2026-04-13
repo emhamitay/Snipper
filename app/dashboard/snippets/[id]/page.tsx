@@ -1,11 +1,12 @@
+// בעה"י
 "use client"
 
 import { use, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Edit, Trash2, Globe, Lock, Copy, Check, ExternalLink } from "lucide-react"
-import { NavbarDashboard } from "@/components/navbar-dashboard"
-import { CodeBlock } from "@/components/code-block"
+import { NavbarDashboard } from "@/components/vercel/navbar-dashboard"
+import { CodeBlock } from "@/components/vercel/code-block"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {

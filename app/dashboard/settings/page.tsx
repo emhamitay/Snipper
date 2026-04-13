@@ -1,9 +1,10 @@
+// בעה"י
 "use client"
 
 import { useState } from "react"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { NavbarDashboard } from "@/components/navbar-dashboard"
+import { NavbarDashboard } from "@/components/vercel/navbar-dashboard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"

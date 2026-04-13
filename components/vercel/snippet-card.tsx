@@ -1,5 +1,4 @@
-"use client"
-
+// בעה"י
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

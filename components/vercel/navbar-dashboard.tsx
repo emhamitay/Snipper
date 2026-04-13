@@ -1,9 +1,10 @@
-"use client"
-
+// בעה"י
 import Link from "next/link"
 import { Code2, LogOut, Plus, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/components/vercel/theme-toggle"
+import { signOut } from "next-auth/react"
+import LogoutButton from "../LogoutButton"
 
 export function NavbarDashboard() {
   return (
@@ -28,12 +29,7 @@ export function NavbarDashboard() {
             </Link>
           </Button>
           <ThemeToggle />
-          <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
-            <Link href="/">
-              <LogOut className="h-4 w-4" />
-              <span className="sr-only">Logout</span>
-            </Link>
-          </Button>
+          <LogoutButton />
         </div>
       </div>
     </header>

@@ -1,6 +1,7 @@
+// בעה"י
 import Link from "next/link"
-import { NavbarPublic } from "@/components/navbar-public"
-import { Footer } from "@/components/footer"
+import { NavbarPublic } from "@/components/vercel/navbar-public"
+import { Footer } from "@/components/vercel/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FolderOpen, Paintbrush, Share2, Copy } from "lucide-react"

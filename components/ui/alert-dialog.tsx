@@ -1,5 +1,4 @@
-'use client'
-
+// בעה"י
 import * as React from 'react'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 

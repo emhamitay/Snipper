@@ -1,5 +1,4 @@
-'use client'
-
+// בעה"י
 import { useMemo } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
