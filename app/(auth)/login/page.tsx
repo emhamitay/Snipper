@@ -38,17 +38,21 @@ export default function LoginPage() {
     setIsLoading(true);
 
     //login
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (!result?.ok) {
-      setError("Invalid email or password");
-      setIsLoading(false);
+      if (!result?.ok) {
+        setError("Invalid email or password");
+        setIsLoading(false);
+      } else router.push("/dashboard");
+      
+    } catch (err) {
+      setError("An error occurred during login. Please try again.");
     }
-    else router.push("/dashboard");
   };
 
   return (
@@ -79,8 +83,10 @@ export default function LoginPage() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(""); }}
-
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError("");
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -90,7 +96,10 @@ export default function LoginPage() {
                   type="password"
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError("");
+                  }}
                 />
               </div>
             </CardContent>
@@ -107,7 +116,9 @@ export default function LoginPage() {
                   <span className="bg-card px-2 text-muted-foreground">Or</span>
                 </div>
               </div>
-              <Button type="button" variant="outline" className="w-full">
+              <Button type="button" variant="outline" className="w-full"
+                onClick={() => signIn("github", { redirect: true, callbackUrl: "/dashboard" })}
+              >
                 <svg
                   className="mr-2 h-4 w-4"
                   viewBox="0 0 24 24"
