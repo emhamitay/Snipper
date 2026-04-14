@@ -7,5 +7,6 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
     };
+    usernameCollision?: boolean; // add a flag to indicate username collision
   }
 }
