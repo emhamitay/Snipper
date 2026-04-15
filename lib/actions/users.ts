@@ -5,6 +5,8 @@ import * as query from "../db/queries/users";
 import type { NewUser, User } from "../db/queries/users";
 import bcrypt from "bcryptjs";
 import { registerSchema } from "../validations/users";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth";
 
 export async function isUsernameAvailable(username: string) {
   const available = await query.isUsernameAvailable(username);
@@ -61,4 +63,12 @@ export async function registerGithubUser(username: string, githubId: string) {
 export async function getGithubUserByGithubId(githubId: string) {
   const user = await query.getGithubUserByGithubId(githubId);
   return user;
+}
+
+export async function getGithubUserIdFromSession(){
+  const session = await getServerSession(authOptions);
+  if(session?.user?.githubId) {
+    return session.user.githubId as string;
+  }
+  return null;
 }
