@@ -7,7 +7,8 @@ import { NavbarPublic } from "@/components/vercel/navbar-public"
 import { CodeBlock } from "@/components/vercel/code-block"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { publicSnippets, languageColors, mockUser } from "@/lib/mock-data"
+import { publicSnippets, mockUser } from "@/lib/mock-data"
+import { languageColors } from "@/lib/languages"
 
 export default function PublicSnippetPage({ 
   params 

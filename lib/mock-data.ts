@@ -36,18 +36,9 @@ export const languageColors: Record<string, string> = {
 }
 
 export const languages = [
-  "javascript",
-  "typescript",
-  "python",
-  "rust",
-  "go",
-  "java",
-  "cpp",
-  "html",
-  "css",
-  "sql",
-  "bash",
-  "json",
+  "javascript", "typescript", "python", "rust",
+  "go", "java", "cpp", "html", "css", "sql", 
+  "bash", "json", "yaml", "markdown", "xml", "php"
 ]
 
 export const mockUser: User = {
