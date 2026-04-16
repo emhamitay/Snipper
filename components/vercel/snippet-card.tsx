@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye, Lock, Globe } from "lucide-react"
-import { type Snippet, languageColors } from "@/lib/mock-data"
+import { type Snippet, languageColors } from "@/lib/languages"
 
 interface SnippetCardProps {
   snippet: Snippet

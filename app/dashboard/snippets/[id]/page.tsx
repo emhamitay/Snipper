@@ -20,7 +20,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { mockSnippets, languageColors } from "@/lib/mock-data"
+import { languageColors } from "@/lib/languages"
+import { mockSnippets } from "@/lib/mock-data"
 
 export default function SnippetViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
