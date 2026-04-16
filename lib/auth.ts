@@ -44,6 +44,8 @@ export const authOptions: NextAuthOptions = {
 
       if (account?.provider === "github") {
         const githubId = String((profile as any)?.id);
+        token.githubId = githubId; // always store so we can detect stale tokens
+
         let existingUser = await getGithubUserByGithubId(githubId);
 
         if (!existingUser) {
@@ -52,19 +54,24 @@ export const authOptions: NextAuthOptions = {
 
           if (!isUsernameTaken) {
             await registerGithubUser(username as string, githubId);
-            existingUser = await getGithubUserByGithubId(githubId); // fetch after insert to get DB id
-            token.usernameCollision = false;
+            existingUser = await getGithubUserByGithubId(githubId);
           } else {
             token.usernameCollision = true;
-            token.githubId = githubId;
           }
         }
 
-        if (existingUser) {
-          token.sub = existingUser.id; // DB id, not GitHub's numeric id
-        }
+        if (existingUser) token.sub = existingUser.id;
+        return token;
+      }
 
-        return token; // return early — skip the `if (user)` below for GitHub
+      // Fix stale GitHub tokens where sub was set to the GitHub numeric ID instead of DB UUID
+      const subIsNumeric = token.sub && Number.isFinite(Number(token.sub));
+      const githubIdInToken = token.githubId as string | undefined;
+      if (!account && subIsNumeric) {
+        const githubId = githubIdInToken ?? token.sub!;
+        const fixedUser = await getGithubUserByGithubId(githubId);
+        if (fixedUser) token.sub = fixedUser.id;
+        return token;
       }
 
       if (user) token.sub = user.id; // credentials path
