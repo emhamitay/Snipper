@@ -38,8 +38,6 @@ import { xml } from "@codemirror/lang-xml";
 import { php } from "@codemirror/lang-php";
 import type { Extension } from "@codemirror/state";
 import { createSnippet } from "@/lib/actions/snippets";
-import { NewSnippet } from "@/lib/db/queries/snippets";
-import { useSession } from "next-auth/react";
 
 
 function getLanguageExtension(lang: string): Extension[] {
@@ -82,9 +80,6 @@ function getLanguageExtension(lang: string): Extension[] {
 }
 
 export default function NewSnippetPage() {
-  const { data: session } = useSession();
-  const userId = (session?.user as { id?: string } | undefined)?.id;
-
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -98,21 +93,14 @@ export default function NewSnippetPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
-
-    if (!userId) {
-      setSubmitError("You must be logged in to create a snippet.");
-      return;
-    }
-
     setIsLoading(true);
 
-    const snippet: NewSnippet = {
+    const snippet = {
       title,
       language,
       description,
       code,
       isPublic,
-      userId,
     };
 
     try {
