@@ -8,15 +8,22 @@ import type {
   UpdateSnippetFields,
 } from "../db/queries/snippets";
 import { createSnippetSchema } from "../validations/snippets";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth";
 
-export async function createSnippet(snippet: NewSnippet) {
-  //validate
+export async function createSnippet(snippet: Omit<NewSnippet, "userId">) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
   const result = createSnippetSchema.safeParse(snippet);
   if (result.success === false) {
     throw new Error(result.error.errors.map((e) => e.message).join(", "));
   }
 
-  const [created] = await query.createSnippet(snippet);
+  const [created] = await query.createSnippet({ ...snippet, userId });
   return created;
 }
 
