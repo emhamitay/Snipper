@@ -1,23 +1,30 @@
 // בעה"י
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Check, Code2, Copy, ExternalLink, Plus, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/vercel/theme-toggle"
-import LogoutButton from "../LogoutButton"
-
-const username = "johndoe"
-const profileUrl = `snippr.app/${username}`
+import { useState } from "react";
+import Link from "next/link";
+import { Check, Code2, Copy, ExternalLink, Plus, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/vercel/theme-toggle";
+import LogoutButton from "../LogoutButton";
+import { useSession } from "next-auth/react";
 
 export function NavbarDashboard() {
-  const [copied, setCopied] = useState(false)
+  const { data: session } = useSession();
+  const [copied, setCopied] = useState(false);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+  const username = session?.user?.username ?? "";
+  const profileUrl = username ? `${origin}/${username}` : "";
+  const fullProfileUrl = profileUrl ? `https://${profileUrl}` : "";
+  const displayUrl = username ? `${window.location.host}/${username}` : "";
 
   function handleCopy() {
-    navigator.clipboard.writeText(`https://${profileUrl}`)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    if (!fullProfileUrl) return;
+    navigator.clipboard.writeText(fullProfileUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -36,20 +43,43 @@ export function NavbarDashboard() {
             </Link>
           </Button>
 
-          <div className="flex items-center gap-0.5 rounded-md border border-border/50 px-2 py-1">
-            <span className="text-sm text-muted-foreground">{profileUrl}</span>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
-              {copied
-                ? <Check className="h-3 w-3 text-green-500" />
-                : <Copy className="h-3 w-3 text-muted-foreground" />}
-              <span className="sr-only">Copy profile URL</span>
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
-              <a href={`https://${profileUrl}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                <span className="sr-only">Open public profile</span>
-              </a>
-            </Button>
+          <div className="hidden items-center gap-2 md:flex">
+            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Public profile
+            </span>
+            <div className="flex items-center gap-0.5 rounded-md border border-border/60 bg-muted/30 px-2 py-1 transition-colors hover:bg-muted/50">
+              <span className="max-w-45 truncate text-sm text-foreground/80">
+                {displayUrl || "set a username"}{" "}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={handleCopy}
+                disabled={!fullProfileUrl}
+              >
+                {copied ? (
+                  <Check className="h-3 w-3 text-green-500" />
+                ) : (
+                  <Copy className="h-3 w-3 text-muted-foreground" />
+                )}
+                <span className="sr-only">Copy profile URL</span>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
+                <a
+                  href={fullProfileUrl || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-disabled={!fullProfileUrl}
+                  onClick={(event) => {
+                    if (!fullProfileUrl) event.preventDefault();
+                  }}
+                >
+                  <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                  <span className="sr-only">Open public profile</span>
+                </a>
+              </Button>
+            </div>
           </div>
 
           <Button variant="ghost" size="icon" asChild className="h-9 w-9">
@@ -63,5 +93,5 @@ export function NavbarDashboard() {
         </div>
       </div>
     </header>
-  )
+  );
 }

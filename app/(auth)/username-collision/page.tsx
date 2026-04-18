@@ -45,7 +45,7 @@ export default function UsernameCollisionPage() {
         return;
       }
       await registerGithubUser(username, githubId);
-      await update({ clearUsernameCollision: true });
+      await update({ clearUsernameCollision: true , username });
       router.push("/dashboard");
     } catch (err) {
       setError("Something went wrong. Please try again.");
