@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { NavbarDashboard } from "@/components/vercel/navbar-dashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -119,108 +118,102 @@ export default function NewSnippetPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <NavbarDashboard />
+    <div className="container mx-auto max-w-3xl px-4 py-8">
+      {/* Back Button */}
+      <Button variant="ghost" asChild className="mb-6 -ml-2">
+        <Link href="/dashboard">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Link>
+      </Button>
 
-      <main className="flex-1">
-        <div className="container mx-auto max-w-3xl px-4 py-8">
-          {/* Back Button */}
-          <Button variant="ghost" asChild className="mb-6 -ml-2">
-            <Link href="/dashboard">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Link>
-          </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle>Create New Snippet</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                placeholder="Snippet title..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New Snippet</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    placeholder="Snippet title..."
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="language">Language</Label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {languages.map((lang) => (
+                    <SelectItem key={lang} value={lang}>
+                      {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="language">Language</Label>
-                  <Select value={language} onValueChange={setLanguage}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((lang) => (
-                        <SelectItem key={lang} value={lang}>
-                          {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (optional)</Label>
+              <Textarea
+                id="description"
+                placeholder="A brief description of your snippet..."
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description (optional)</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="A brief description of your snippet..."
-                    rows={2}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="code">Code</Label>
+              <CodeMirror
+                value={code}
+                extensions={getLanguageExtension(language)}
+                onChange={(value) => setCode(value)}
+                theme="dark"
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="code">Code</Label>
-                  <CodeMirror
-                    value={code}
-                    extensions={getLanguageExtension(language)}
-                    onChange={(value) => setCode(value)}
-                    theme="dark"
-                  />
-                </div>
+            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+              <div>
+                <Label htmlFor="public" className="text-base font-medium">
+                  Public Snippet
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Make this snippet visible to everyone
+                </p>
+              </div>
+              <Switch
+                id="public"
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
+              />
+            </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-border p-4">
-                  <div>
-                    <Label htmlFor="public" className="text-base font-medium">
-                      Public Snippet
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Make this snippet visible to everyone
-                    </p>
-                  </div>
-                  <Switch
-                    id="public"
-                    checked={isPublic}
-                    onCheckedChange={setIsPublic}
-                  />
-                </div>
+            <div className="flex gap-4">
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Saving..." : "Save Snippet"}
+              </Button>
+              <Button type="button" variant="outline" asChild>
+                <Link href="/dashboard">Cancel</Link>
+              </Button>
+            </div>
 
-                <div className="flex gap-4">
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Saving..." : "Save Snippet"}
-                  </Button>
-                  <Button type="button" variant="outline" asChild>
-                    <Link href="/dashboard">Cancel</Link>
-                  </Button>
-                </div>
-
-                {submitError && (
-                  <p role="alert" className="text-sm text-destructive">
-                    {submitError}
-                  </p>
-                )}
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+            {submitError && (
+              <p role="alert" className="text-sm text-destructive">
+                {submitError}
+              </p>
+            )}
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -40,17 +40,22 @@ export const authOptions: NextAuthOptions = {
       if (trigger === "update" && session?.clearUsernameCollision) {
         delete token.usernameCollision;
         delete token.githubId;
+        if (session?.username) {
+          token.username = session.username;
+        }
       }
 
       if (account?.provider === "github") {
         const githubId = String((profile as any)?.id);
-        token.githubId = githubId; // always store so we can detect stale tokens
+        token.githubId = githubId;
 
         let existingUser = await getGithubUserByGithubId(githubId);
 
         if (!existingUser) {
           const username = (profile as any)?.login;
-          const isUsernameTaken = !(await isUsernameAvailable(username as string));
+          const isUsernameTaken = !(await isUsernameAvailable(
+            username as string,
+          ));
 
           if (!isUsernameTaken) {
             await registerGithubUser(username as string, githubId);
@@ -60,25 +65,41 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        if (existingUser) token.sub = existingUser.id;
+        if (existingUser) {
+          token.sub = existingUser.id;
+          token.username = existingUser.username;
+        }
         return token;
       }
 
-      // Fix stale GitHub tokens where sub was set to the GitHub numeric ID instead of DB UUID
+      // Stale token fix: on the very first GitHub sign-in, older versions of this code
+      // set token.sub to GitHub's numeric ID instead of our DB UUID. If we detect a
+      // numeric sub on a subsequent request (account is absent on non-sign-in requests),
+      // we look up the real user by githubId and correct token.sub in place.
+      // In practice this only fires for tokens issued before this logic existed.
       const subIsNumeric = token.sub && Number.isFinite(Number(token.sub));
       const githubIdInToken = token.githubId as string | undefined;
       if (!account && subIsNumeric) {
         const githubId = githubIdInToken ?? token.sub!;
         const fixedUser = await getGithubUserByGithubId(githubId);
-        if (fixedUser) token.sub = fixedUser.id;
+        if (fixedUser) {
+          token.sub = fixedUser.id;
+          token.username = fixedUser.username;
+        }
         return token;
       }
 
-      if (user) token.sub = user.id; // credentials path
+      if (user) {
+        token.sub = user.id;
+        token.username = user.name;
+      }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.sub!;
+      if (token.username) {
+        session.user.username = token.username as string;
+      }
       if (token.usernameCollision) {
         session.usernameCollision = true;
         session.user.githubId = token.githubId as string;
