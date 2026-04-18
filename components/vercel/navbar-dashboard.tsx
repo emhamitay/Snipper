@@ -36,16 +36,11 @@ export function NavbarDashboard() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Button asChild>
-            <Link href="/dashboard/snippets/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Snippet
-            </Link>
-          </Button>
+          
 
           <div className="hidden items-center gap-2 md:flex">
             <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              Public profile
+              Public profile: 
             </span>
             <div className="flex items-center gap-0.5 rounded-md border border-border/60 bg-muted/30 px-2 py-1 transition-colors hover:bg-muted/50">
               <span className="max-w-45 truncate text-sm text-foreground/80">
@@ -81,6 +76,13 @@ export function NavbarDashboard() {
               </Button>
             </div>
           </div>
+
+          <Button asChild>
+            <Link href="/dashboard/snippets/new">
+              <Plus className="mr-2 h-4 w-4" />
+              New Snippet
+            </Link>
+          </Button>
 
           <Button variant="ghost" size="icon" asChild className="h-9 w-9">
             <Link href="/dashboard/settings">
