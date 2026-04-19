@@ -2,6 +2,7 @@
 import { snippets } from "../schema";
 import { db } from "../index"
 import { eq, and } from "drizzle-orm";
+import { create } from "domain";
 
 export type Snippet = typeof snippets.$inferSelect;
 export type NewSnippet = typeof snippets.$inferInsert;
@@ -30,6 +31,15 @@ export async function getPublicSnippetsByUserId(userId: string) : Promise<Snippe
     return await db.select().from(snippets).where(and(eq(snippets.userId, userId), eq(snippets.isPublic, true)));
 }
 
-export async function getSnippetsByUserId(userId: string) : Promise<Snippet[]> {
-    return await db.select().from(snippets).where(eq(snippets.userId, userId));
+//this method doesn't need to return full snippets just what that there is on the card's summery
+export async function getSnippetsByUserId(userId: string) {
+    return await db.select({
+        id: snippets.id,
+        title: snippets.title,
+        description: snippets.description,
+        createdAt: snippets.createdAt,
+        language: snippets.language,
+        isPublic: snippets.isPublic
+    }).from(snippets).where(eq(snippets.userId, userId));
 }
+export type SnippetCardInfo = Awaited<ReturnType<typeof getSnippetsByUserId>>[number]
