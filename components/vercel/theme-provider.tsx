@@ -1,3 +1,5 @@
+"use client"
+
 // בעה"י
 import * as React from 'react'
 import {

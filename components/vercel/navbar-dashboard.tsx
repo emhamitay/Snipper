@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/vercel/theme-toggle";
 import LogoutButton from "../LogoutButton";
 import { useSession } from "next-auth/react";
+import { buildAbsolutePublicUrl, buildPublicProfilePath } from "@/lib/public-url";
 
-export function NavbarDashboard() {
+interface NavbarDashboardProps {
+  appOrigin: string;
+}
+
+export function NavbarDashboard({ appOrigin }: NavbarDashboardProps) {
   const { data: session } = useSession();
   const [copied, setCopied] = useState(false);
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-
   const username = session?.user?.username ?? "";
-  const profileUrl = username ? `${origin}/${username}` : "";
-  const fullProfileUrl = profileUrl ? `https://${profileUrl}` : "";
-  const displayUrl = username ? `${window.location.host}/${username}` : "";
+  const profilePath = buildPublicProfilePath(username);
+  const fullProfileUrl = buildAbsolutePublicUrl(appOrigin, profilePath);
+  const displayUrl = fullProfileUrl || "set a username";
 
   function handleCopy() {
     if (!fullProfileUrl) return;

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__vercel__list_teams",
+      "mcp__vercel__list_projects",
+      "mcp__vercel__list_deployments",
+      "mcp__vercel__get_deployment_build_logs",
+      "Bash(cd:*)"
+    ]
+  }
+}

@@ -1,31 +1,13 @@
 // בעה"י
-"use client"
-
-import { use, useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { mockSnippets, languages } from "@/lib/mock-data"
+import SnippetEditorForm from "@/components/SnippetEditorForm"
+import { getSnippetById } from "@/lib/db/queries/snippets"
 
-export default function EditSnippetPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-
-  const snippet = mockSnippets.find((s) => s.id === id)
-
-  const [title, setTitle] = useState(snippet?.title || "")
-  const [language, setLanguage] = useState(snippet?.language || "javascript")
-  const [description, setDescription] = useState(snippet?.description || "")
-  const [code, setCode] = useState(snippet?.code || "")
-  const [isPublic, setIsPublic] = useState(snippet?.isPublic ?? true)
+export default async function EditSnippetPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const snippet = await getSnippetById(id)
 
   if (!snippet) {
     return (
@@ -43,16 +25,8 @@ export default function EditSnippetPage({ params }: { params: Promise<{ id: stri
     )
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    // Simulate save
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    router.push(`/dashboard/snippets/${id}`)
-  }
-
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="container mx-auto max-w-5xl px-4 py-8">
       {/* Back Button */}
       <Button variant="ghost" asChild className="mb-6 -ml-2">
         <Link href={`/dashboard/snippets/${id}`}>
@@ -60,90 +34,7 @@ export default function EditSnippetPage({ params }: { params: Promise<{ id: stri
           Back to Snippet
         </Link>
       </Button>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Snippet</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="My awesome snippet"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="language">Language</Label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map((lang) => (
-                    <SelectItem key={lang} value={lang}>
-                      {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="A brief description of your snippet..."
-                rows={2}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="code">Code</Label>
-              <Textarea
-                id="code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Paste your code here..."
-                className="min-h-75 font-mono text-sm bg-zinc-950 text-zinc-100 border-zinc-800 placeholder:text-zinc-500"
-                required
-              />
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border border-border p-4">
-              <div>
-                <Label htmlFor="public" className="text-base font-medium">
-                  Public Snippet
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Make this snippet visible to everyone
-                </p>
-              </div>
-              <Switch
-                id="public"
-                checked={isPublic}
-                onCheckedChange={setIsPublic}
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-              <Button type="button" variant="outline" asChild>
-                <Link href={`/dashboard/snippets/${id}`}>Cancel</Link>
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <SnippetEditorForm snippet={snippet} />
     </div>
   )
 }
