@@ -8,6 +8,7 @@ import Shiki from "@/components/Shiki"
 import { getSnippetById } from "@/lib/db/queries/snippets"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import { FloatingCopyButton } from "@/components/FloatingCopyButton"
 import { headers } from "next/headers"
 import { buildAbsolutePublicUrl, buildPublicSnippetPath, getRequestOrigin } from "@/lib/public-url"
 
@@ -48,9 +49,10 @@ export default async function SnippetViewPage({ params }: { params: Promise<{ id
         </Link>
       </Button>
 
-      <SnippetDetailsPanel snippet={snippet} authorUsername={username} publicSnippetUrl={publicSnippetUrl}>
+      <SnippetDetailsPanel snippet={snippet} authorUsername={username} publicSnippetUrl={publicSnippetUrl} isDashboard>
         <Shiki code={snippet.code} lang={snippet.language} />
       </SnippetDetailsPanel>
+      <FloatingCopyButton code={snippet.code} />
     </div>
   )
 }

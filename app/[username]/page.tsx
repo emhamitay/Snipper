@@ -1,81 +1,63 @@
 // בעה"י
 
-import { use } from "react"
-import { NavbarPublic } from "@/components/vercel/navbar-public"
-import { SnippetCard } from "@/components/vercel/snippet-card"
-import { EmptyState } from "@/components/vercel/empty-state"
-import { mockUser, publicSnippets } from "@/lib/mock-data"
+import { notFound } from "next/navigation"
+import SnippetList from "@/components/SnippetList"
+import { getUserByUsername } from "@/lib/db/queries/users"
+import { getPublicSnippetsByUserId } from "@/lib/db/queries/snippets"
 
-export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
-  const { username } = use(params)
+export default async function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = await params
 
-  // In a real app, fetch user data by username
-  const user = username === mockUser.username ? mockUser : null
-  const snippets = user ? publicSnippets.filter((s) => s.authorUsername === username) : []
+  const user = await getUserByUsername(username)
 
   if (!user) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <NavbarPublic />
-        <main className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">User not found</h1>
-            <p className="mt-2 text-muted-foreground">
-              The user you are looking for does not exist.
-            </p>
-          </div>
-        </main>
-      </div>
-    )
+    notFound()
   }
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <NavbarPublic />
+  const snippets = await getPublicSnippetsByUserId(user.id)
+  const usedLanguages = [...new Set(snippets.map((s) => s.language))]
 
-      <main className="flex-1">
-        <div className="container mx-auto max-w-6xl px-4 py-8">
-          {/* Profile Header */}
-          <div className="mb-8 border-b border-border pb-8">
-            <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
-                {user.displayName.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">{user.displayName}</h1>
-                <p className="text-muted-foreground">@{user.username}</p>
-                {user.bio && (
-                  <p className="mt-2 max-w-xl text-muted-foreground">{user.bio}</p>
-                )}
-              </div>
+  return (
+    <div className="container mx-auto max-w-6xl px-4 py-8">
+      <div className="rounded-3xl border border-border/70 bg-linear-to-br from-background via-background to-muted/30 p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="mb-3 inline-flex items-center rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              Public Profile
             </div>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              @{username}&apos;s snippets
+            </h1>
+            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted-foreground">
+              Browse all public code snippets shared by this user.
+            </p>
           </div>
 
-          {/* Public Snippets */}
-          <div>
-            <h2 className="mb-4 text-lg font-semibold">
-              Public Snippets ({snippets.length})
-            </h2>
-            {snippets.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                {snippets.map((snippet) => (
-                  <SnippetCard
-                    key={snippet.id}
-                    snippet={snippet}
-                    href={`/${username}/${snippet.id}`}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="No public snippets"
-                description="This user hasn&apos;t shared any public snippets yet."
-                icon="file"
-              />
-            )}
+          <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+            <span className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-sm text-muted-foreground">
+              {snippets.length} {snippets.length === 1 ? "snippet" : "snippets"}
+            </span>
+            <span className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-sm text-muted-foreground">
+              @{username}
+            </span>
           </div>
         </div>
-      </main>
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-border/70 bg-background/80 p-5 shadow-sm sm:p-6">
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold tracking-tight">Snippet collection</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Browse and filter public snippets shared by @{username}.
+          </p>
+        </div>
+        <SnippetList
+          snippets={snippets}
+          languages={usedLanguages}
+          baseHref={`/${username}`}
+        />
+      </div>
     </div>
   )
 }
+

@@ -27,10 +27,11 @@ interface SnippetDetailsPanelProps {
 	snippet: Snippet,
     authorUsername: string,
 	publicSnippetUrl: string,
+	isDashboard?: boolean,
 	children?: ReactNode
 }
 
-export function SnippetDetailsPanel({ snippet, authorUsername, publicSnippetUrl, children }: SnippetDetailsPanelProps) {
+export function SnippetDetailsPanel({ snippet, authorUsername, publicSnippetUrl, isDashboard = false, children }: SnippetDetailsPanelProps) {
 	const router = useRouter()
 	const [copiedLink, setCopiedLink] = useState(false)
 
@@ -97,6 +98,8 @@ export function SnippetDetailsPanel({ snippet, authorUsername, publicSnippetUrl,
 						)}
 					</div>
 					<div className="flex flex-wrap items-center gap-2 lg:justify-end">
+						{isDashboard && (
+						<>
 						<Button variant="outline" asChild>
 							<Link href={`/dashboard/snippets/${snippet.id}/edit`}>
 								<Edit className="mr-2 h-4 w-4" />
@@ -129,6 +132,8 @@ export function SnippetDetailsPanel({ snippet, authorUsername, publicSnippetUrl,
 								</AlertDialogFooter>
 							</AlertDialogContent>
 						</AlertDialog>
+						</>
+						)}
 					</div>
 				</div>
 			</div>
@@ -145,7 +150,7 @@ export function SnippetDetailsPanel({ snippet, authorUsername, publicSnippetUrl,
 			</div>
 
 			{/* Public Share Link */}
-			{snippet.isPublic && (
+		{isDashboard && snippet.isPublic && (
 				<div className="mt-8 rounded-2xl border border-border/70 bg-linear-to-r from-muted/40 via-background to-muted/20 p-4 shadow-sm sm:p-5">
 					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 						<div className="min-w-0 flex-1">
@@ -180,6 +185,6 @@ export function SnippetDetailsPanel({ snippet, authorUsername, publicSnippetUrl,
 					</div>
 				</div>
 			)}
-		</>
+	</>
 	)
 }

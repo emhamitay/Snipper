@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, Code2, Copy, ExternalLink, Plus, Settings } from "lucide-react";
+import { Check, Code2, Copy, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/vercel/theme-toggle";
 import LogoutButton from "../LogoutButton";
@@ -87,12 +87,6 @@ export function NavbarDashboard({ appOrigin }: NavbarDashboardProps) {
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" asChild className="h-9 w-9">
-            <Link href="/dashboard/settings">
-              <Settings className="h-4 w-4" />
-              <span className="sr-only">Settings</span>
-            </Link>
-          </Button>
           <ThemeToggle />
           <LogoutButton />
         </div>

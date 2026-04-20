@@ -12,14 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { Snippet } from "@/lib/db/queries/snippets";
+import type { SnippetCardInfo } from "@/lib/db/queries/snippets";
 
 interface SnippetListProps {
-  snippets: Snippet[]
+  snippets: SnippetCardInfo[]
   languages: string[]
+  baseHref: string
+  isDashboard?: boolean
 }
 
-export default function SnippetList({ snippets, languages }: SnippetListProps) {
+export default function SnippetList({ snippets, languages, baseHref, isDashboard = false }: SnippetListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [languageFilter, setLanguageFilter] = useState<string>("all")
 
@@ -71,8 +73,8 @@ export default function SnippetList({ snippets, languages }: SnippetListProps) {
             <SnippetCard
               key={snippet.id}
               snippet={snippet}
-              href={`/dashboard/snippets/${snippet.id}`}
-              showVisibility
+              href={`${baseHref}/${snippet.id}`}
+              showVisibility={isDashboard}
             />
           ))}
         </div>
@@ -80,8 +82,8 @@ export default function SnippetList({ snippets, languages }: SnippetListProps) {
         <EmptyState
           title="No snippets yet"
           description="Create your first snippet to get started organizing your code."
-          actionLabel="Create Snippet"
-          actionHref="/dashboard/snippets/new"
+          actionLabel={isDashboard ? "Create Snippet" : undefined}
+          actionHref={isDashboard ? "/dashboard/snippets/new" : undefined}
         />
       )}
     </>
