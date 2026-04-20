@@ -38,6 +38,17 @@ export async function getSnippetsByUserId(userId: string): Promise<Snippet[]> {
 }
 
 export async function updateSnippet(id: string, snippet: UpdateSnippetFields) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const existing = await query.getSnippetById(id);
+  if (!existing || existing.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
   const result = createSnippetSchema.partial().safeParse(snippet);
   if (result.success === false) {
     throw new Error(result.error.errors.map((e) => e.message).join(", "));
@@ -47,6 +58,17 @@ export async function updateSnippet(id: string, snippet: UpdateSnippetFields) {
 }
 
 export async function deleteSnippet(id: string) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const existing = await query.getSnippetById(id);
+  if (!existing || existing.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
   await query.deleteSnippet(id);
 }
 
