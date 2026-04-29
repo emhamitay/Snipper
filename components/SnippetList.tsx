@@ -73,7 +73,7 @@ export default function SnippetList({ snippets, languages, baseHref, isDashboard
             <SnippetCard
               key={snippet.id}
               snippet={snippet}
-              href={`${baseHref}/${snippet.id}`}
+              href={`${baseHref}/${snippet.slug}`}
               showVisibility={isDashboard}
             />
           ))}

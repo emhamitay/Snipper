@@ -20,6 +20,7 @@ interface AvailabilityInputProps {
   takenMessage?: string;
   debounceMs?: number;
   validate?: (value: string) => boolean;
+  initialValue?: string;
 }
 
 export function AvailabilityInput({
@@ -34,8 +35,9 @@ export function AvailabilityInput({
   takenMessage = "Already taken",
   debounceMs = 500,
   validate,
+  initialValue = "",
 }: AvailabilityInputProps) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(initialValue);
   const [status, setStatus] = useState<AvailabilityStatus>("idle");
   const [isPending, startTransition] = useTransition();
 

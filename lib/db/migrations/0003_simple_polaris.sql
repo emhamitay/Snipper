@@ -1,0 +1,1 @@
+ALTER TABLE "snippets" ADD CONSTRAINT "snippets_title_unique" UNIQUE("title");

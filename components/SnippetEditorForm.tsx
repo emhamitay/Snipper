@@ -1,7 +1,7 @@
 // בעה"י
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import CodeMirror from "@uiw/react-codemirror";
@@ -22,7 +22,6 @@ import { xml } from "@codemirror/lang-xml";
 import { php } from "@codemirror/lang-php";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -34,11 +33,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { languageColors, languages } from "@/lib/languages";
-import { createSnippet, updateSnippet } from "@/lib/actions/snippets";
+import type { AvailabilityStatus } from "@/components/AvailabilityInput";
+import { AvailabilityInput } from "@/components/AvailabilityInput";
+import {
+  createSnippet,
+  isSnippetTitleAvailable,
+  isSnippetSlugAvailable,
+  updateSnippet,
+} from "@/lib/actions/snippets";
+
 import type { Snippet } from "@/lib/db/queries/snippets";
+import { TagInput } from "./TagInput";
 
 interface SnippetEditorFormProps {
   snippet?: Snippet | null;
+  initialTags?: string[];
 }
 
 function getLanguageExtension(lang: string): Extension[] {
@@ -80,23 +89,27 @@ function getLanguageExtension(lang: string): Extension[] {
   }
 }
 
-export default function SnippetEditorForm({ snippet }: SnippetEditorFormProps) {
+export default function SnippetEditorForm({ snippet, initialTags = [] }: SnippetEditorFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [title, setTitle] = useState(snippet?.title ?? "");
+  const [titleStatus, setTitleStatus] = useState<AvailabilityStatus>(
+    snippet ? "available" : "idle",
+  );
   const [description, setDescription] = useState(snippet?.description ?? "");
   const [code, setCode] = useState(snippet?.code ?? "");
   const [isPublic, setIsPublic] = useState(snippet?.isPublic ?? true);
+  const [tags, setTags] = useState<string[]>(initialTags);
 
-  //use a lazy initializer to read from localStorage only on the client and only once
-  const [language, setLanguage] = useState(() => {
-    if (snippet?.language) return snippet.language;
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("snippr:preferred-language") ?? "typescript";
+  const [language, setLanguage] = useState(snippet?.language || "typescript");
+
+  useEffect(() => {
+    if (!snippet?.language) {
+      const preferred = localStorage.getItem("snippr:preferred-language");
+      if (preferred) setLanguage(preferred);
     }
-    return "typescript";
-  });
+  }, [snippet?.language]);
+
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
     localStorage.setItem("snippr:preferred-language", lang);
@@ -104,23 +117,27 @@ export default function SnippetEditorForm({ snippet }: SnippetEditorFormProps) {
 
   const isEditing = Boolean(snippet);
   const cancelHref = isEditing
-    ? `/dashboard/snippets/${snippet?.id}`
+    ? `/dashboard/snippets/${snippet?.slug}`
     : "/dashboard";
   const colorClass =
     languageColors[language] || "bg-muted text-muted-foreground";
   const pageEyebrow = isEditing ? "Edit snippet" : "Create snippet";
-  const pageTitle = isEditing
-    ? title || "Untitled snippet"
-    : "Create a new snippet";
+  const pageTitle = isEditing ? snippet?.title || "Untitled snippet" : "Create a new snippet";
   const pageDescription = isEditing
     ? "Refine the title, code, and visibility without leaving the editor flow."
     : "Draft a polished snippet with the same structure and presentation as the detail view.";
   const submitLabel = isEditing ? "Save Changes" : "Save Snippet";
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (titleStatus !== "available") {
+      setSubmitError("Please choose an available snippet name.");
+      return;
+    }
     setSubmitError(null);
     setIsLoading(true);
+    const formData = new FormData(event.currentTarget);
+    const title = (formData.get("title") as string | null) ?? "";
 
     const snippetPayload = {
       title,
@@ -128,12 +145,13 @@ export default function SnippetEditorForm({ snippet }: SnippetEditorFormProps) {
       description,
       code,
       isPublic,
+      tags,
     };
 
     try {
       if (snippet) {
         await updateSnippet(snippet.id, snippetPayload);
-        router.push(`/dashboard/snippets/${snippet.id}`);
+        router.push(`/dashboard/snippets/${snippet.slug}`);
       } else {
         await createSnippet(snippetPayload);
         router.push("/dashboard");
@@ -190,15 +208,18 @@ export default function SnippetEditorForm({ snippet }: SnippetEditorFormProps) {
 
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
+              <AvailabilityInput
                 id="title"
-                placeholder={
-                  isEditing ? "My awesome snippet" : "Snippet title..."
+                label="Snippet name"
+                placeholder="Snippet title..."
+                initialValue={snippet?.title ?? ""}
+                checkAvailability={(value) =>
+                  isSnippetSlugAvailable(value, snippet?.id)
                 }
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                required
+                onStatusChange={setTitleStatus}
+                availableMessage="URL slug is available"
+                takenMessage="URL slug is already taken"
+                validate={(value) => value.trim().length > 0}
               />
             </div>
 
@@ -228,8 +249,14 @@ export default function SnippetEditorForm({ snippet }: SnippetEditorFormProps) {
                 onChange={(event) => setDescription(event.target.value)}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <TagInput tags={tags} setTags={setTags} />
+            </div>
           </div>
         </div>
+
 
         <div className="rounded-2xl border border-border/70 bg-linear-to-b from-background to-muted/20 p-5 shadow-sm sm:p-6">
           <div className="mb-5">
@@ -313,7 +340,10 @@ export default function SnippetEditorForm({ snippet }: SnippetEditorFormProps) {
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={isLoading}>
+          <Button
+            type="submit"
+            disabled={isLoading || titleStatus !== "available"}
+          >
             {isLoading ? "Saving..." : submitLabel}
           </Button>
           <Button type="button" variant="outline" asChild>

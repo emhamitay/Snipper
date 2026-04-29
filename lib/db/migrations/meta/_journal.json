@@ -22,6 +22,20 @@
       "when": 1776367282625,
       "tag": "0002_equal_nighthawk",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777488427997,
+      "tag": "0003_simple_polaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777490694636,
+      "tag": "0004_broad_thor",
+      "breakpoints": true
     }
   ]
 }

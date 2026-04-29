@@ -1,7 +1,8 @@
 // בעה"י
 import { users } from "../schema";
 import { db } from "../index"
-import { eq } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
+
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -29,8 +30,12 @@ export async function getGithubUserByGithubId(githubId: string) : Promise<User |
     const user = await db.select().from(users).where(eq(users.githubId, githubId)).limit(1);
     return user[0] || null; // return the user object or null if not found
 }
-
 export async function getUserByUsername(username: string) : Promise<User | null> {
-    const user = await db.select().from(users).where(eq(users.username, username)).limit(1);
+
+    const user = await db
+        .select()
+        .from(users)
+        .where(sql`lower(${users.username}) = lower(${username})`)
+        .limit(1);
     return user[0] || null;
-}
+}

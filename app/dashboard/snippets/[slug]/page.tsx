@@ -11,14 +11,20 @@ import { authOptions } from "@/lib/auth"
 import { FloatingCopyButton } from "@/components/FloatingCopyButton"
 import { headers } from "next/headers"
 import { buildAbsolutePublicUrl, buildPublicSnippetPath, getRequestOrigin } from "@/lib/public-url"
+import { getSnippetLikes } from "@/lib/actions/likes"
+import { getSnippetTags } from "@/lib/actions/tags"
 
-export default async function SnippetViewPage({ params }: { params: Promise<{ id: string }> }) {
+import { getSnippetBySlug } from "@/lib/db/queries/snippets"
+
+export default async function SnippetViewPage({ params }: { params: Promise<{ slug: string }> }) {
   const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return null;
+
   const headerStore = await headers()
   const appOrigin = getRequestOrigin(headerStore)
-  const { id } = await params
-  const snippet = await getSnippetById(id);
-  const username = session?.user?.username ?? ""
+  const { slug } = await params
+  
+  const snippet = await getSnippetBySlug(session.user.id, slug);
 
   if (!snippet) {
     return (
@@ -36,8 +42,15 @@ export default async function SnippetViewPage({ params }: { params: Promise<{ id
     )
   }
 
-  const publicSnippetPath = buildPublicSnippetPath(username, snippet.id)
+  const [likesData, tagsData] = await Promise.all([
+    getSnippetLikes(snippet.id),
+    getSnippetTags(snippet.id),
+  ]);
+
+  const username = session?.user?.username ?? ""
+  const publicSnippetPath = buildPublicSnippetPath(username, snippet.slug)
   const publicSnippetUrl = buildAbsolutePublicUrl(appOrigin, publicSnippetPath)
+
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
@@ -49,10 +62,20 @@ export default async function SnippetViewPage({ params }: { params: Promise<{ id
         </Link>
       </Button>
 
-      <SnippetDetailsPanel snippet={snippet} authorUsername={username} publicSnippetUrl={publicSnippetUrl} isDashboard>
+      <SnippetDetailsPanel 
+        snippet={snippet} 
+        authorUsername={username} 
+        publicSnippetUrl={publicSnippetUrl} 
+        isDashboard
+        likesCount={likesData.count}
+        isLiked={likesData.isLiked}
+        tags={tagsData.map(t => t.name)}
+        isLoggedIn={!!session?.user}
+      >
         <Shiki code={snippet.code} lang={snippet.language} />
       </SnippetDetailsPanel>
       <FloatingCopyButton code={snippet.code} />
     </div>
   )
 }
+

@@ -1,7 +1,7 @@
 // בעה"י
 import { snippets } from "../schema";
 import { db } from "../index"
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne, sql } from "drizzle-orm";
 import { create } from "domain";
 
 export type Snippet = typeof snippets.$inferSelect;
@@ -24,14 +24,65 @@ export async function deleteSnippet(id: string) {
 
 export async function getSnippetById(id: string) : Promise<Snippet | null> {
     const snippet = await db.select().from(snippets).where(eq(snippets.id, id)).limit(1);
-    return snippet[0] || null; // return the snippet object or null if not found
+    return snippet[0] || null;
+}
+
+export async function getSnippetBySlug(userId: string, slug: string) : Promise<Snippet | null> {
+    const snippet = await db
+        .select()
+        .from(snippets)
+        .where(and(eq(snippets.userId, userId), eq(snippets.slug, slug)))
+        .limit(1);
+    return snippet[0] || null;
 }
 
 export async function getPublicSnippetsByUserId(userId: string) : Promise<Snippet[]> {
     return await db.select().from(snippets).where(and(eq(snippets.userId, userId), eq(snippets.isPublic, true)));
 }
 
-//this method doesn't need to return full snippets just what that there is on the card's summery
+export async function isSnippetTitleAvailable(
+    title: string,
+    userId: string,
+    excludeSnippetId?: string,
+): Promise<boolean> {
+    const normalizedTitle = title.toLowerCase();
+    const conditions = [
+        eq(snippets.userId, userId),
+        sql`lower(${snippets.title}) = ${normalizedTitle}`,
+    ];
+    if (excludeSnippetId) {
+        conditions.push(ne(snippets.id, excludeSnippetId));
+    }
+
+    const snippet = await db
+        .select({ id: snippets.id })
+        .from(snippets)
+        .where(and(...conditions))
+        .limit(1);
+    return snippet.length === 0;
+}
+
+export async function isSnippetSlugAvailable(
+    slug: string,
+    userId: string,
+    excludeSnippetId?: string,
+): Promise<boolean> {
+    const conditions = [
+        eq(snippets.userId, userId),
+        eq(snippets.slug, slug),
+    ];
+    if (excludeSnippetId) {
+        conditions.push(ne(snippets.id, excludeSnippetId));
+    }
+
+    const snippet = await db
+        .select({ id: snippets.id })
+        .from(snippets)
+        .where(and(...conditions))
+        .limit(1);
+    return snippet.length === 0;
+}
+
 export async function getSnippetsByUserId(userId: string) {
     return await db.select({
         id: snippets.id,
@@ -39,7 +90,9 @@ export async function getSnippetsByUserId(userId: string) {
         description: snippets.description,
         createdAt: snippets.createdAt,
         language: snippets.language,
-        isPublic: snippets.isPublic
+        isPublic: snippets.isPublic,
+        slug: snippets.slug,
     }).from(snippets).where(eq(snippets.userId, userId));
 }
+
 export type SnippetCardInfo = Awaited<ReturnType<typeof getSnippetsByUserId>>[number]
