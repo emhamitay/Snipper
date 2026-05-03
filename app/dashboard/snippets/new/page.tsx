@@ -3,8 +3,14 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SnippetEditorForm from "@/components/SnippetEditorForm";
+import { getFoldersByUserId } from "@/lib/actions/folders";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export default function NewSnippetPage() {
+export default async function NewSnippetPage() {
+  const session = await getServerSession(authOptions);
+  const folders = session?.user?.id ? await getFoldersByUserId() : [];
+
   return (
     <div className="container mx-auto max-w-5xl px-4 py-8">
       {/* Back Button */}
@@ -14,7 +20,7 @@ export default function NewSnippetPage() {
           Back to Dashboard
         </Link>
       </Button>
-      <SnippetEditorForm />
+      <SnippetEditorForm folders={folders} />
     </div>
   );
 }

@@ -19,6 +19,26 @@ export const users = pgTable("users", {
   githubId: varchar("github_id", { length: 255 }).unique(),
 });
 
+export const folders = pgTable(
+  "folders",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 100 }).notNull(),
+    slug: varchar("slug", { length: 100 }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("folders_user_id_name_ci_unique").on(
+      table.userId,
+      sql`lower(${table.name})`,
+    ),
+    uniqueIndex("folders_user_id_slug_unique").on(table.userId, table.slug),
+  ],
+);
+
 export const snippets = pgTable(
   "snippets",
   {
@@ -33,9 +53,10 @@ export const snippets = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
     isPublic: boolean("is_public").notNull().default(false),
+    folderId: uuid("folder_id").references(() => folders.id, {
+      onDelete: "set null",
+    }),
     slug: varchar("slug", { length: 255 }).notNull(),
-
-
   },
   (table) => [
     uniqueIndex("snippets_user_id_title_ci_unique").on(
@@ -45,7 +66,6 @@ export const snippets = pgTable(
     uniqueIndex("snippets_user_id_slug_unique").on(table.userId, table.slug),
   ],
 );
-
 
 export const likes = pgTable(
   "likes",
@@ -88,4 +108,4 @@ export const snippetTags = pgTable(
       table.tagId,
     ),
   ],
-);
+);

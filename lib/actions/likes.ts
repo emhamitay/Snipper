@@ -35,7 +35,7 @@ export async function toggleLike(snippetId: string) {
     });
   }
 
-  revalidatePath(`/dashboard/snippets/${snippetId}`);
+  revalidatePath(`/dashboard/snippets/snippet/${snippetId}`);
   revalidatePath("/"); // Revalidate landing/explore if needed
 }
 

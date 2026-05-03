@@ -87,7 +87,7 @@ className="relative z-20 h-7 w-7 opacity-0 group-hover:opacity-100 data-[state=o
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link href={`/dashboard/snippets/${snippet.slug}/edit`}>
+                  <Link href={`/dashboard/snippets/snippet/${snippet.slug}/edit`}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit
                   </Link>

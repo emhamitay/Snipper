@@ -1,7 +1,7 @@
 // בעה"י
 import { snippets } from "../schema";
 import { db } from "../index"
-import { eq, and, ne, sql } from "drizzle-orm";
+import { eq, and, ne, sql, isNull } from "drizzle-orm";
 import { create } from "domain";
 
 export type Snippet = typeof snippets.$inferSelect;
@@ -96,3 +96,34 @@ export async function getSnippetsByUserId(userId: string) {
 }
 
 export type SnippetCardInfo = Awaited<ReturnType<typeof getSnippetsByUserId>>[number]
+
+export async function getSnippetCountsByFolderForUser(userId: string): Promise<Record<string, number>> {
+    const result = await db
+        .select({
+            folderId: snippets.folderId,
+            count: sql<number>`count(*)::int`,
+        })
+        .from(snippets)
+        .where(eq(snippets.userId, userId))
+        .groupBy(snippets.folderId);
+
+    return Object.fromEntries(
+        result
+            .filter((r) => r.folderId !== null)
+            .map((r) => [r.folderId!, r.count])
+    );
+}
+
+export async function getRootSnippetsByUserId(userId: string) {
+    return await db.select({
+        id: snippets.id,
+        title: snippets.title,
+        description: snippets.description,
+        createdAt: snippets.createdAt,
+        language: snippets.language,
+        isPublic: snippets.isPublic,
+        slug: snippets.slug,
+    }).from(snippets).where(
+        and(eq(snippets.userId, userId), isNull(snippets.folderId))
+    );
+}

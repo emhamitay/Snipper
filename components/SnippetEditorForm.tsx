@@ -43,11 +43,13 @@ import {
 } from "@/lib/actions/snippets";
 
 import type { Snippet } from "@/lib/db/queries/snippets";
+import type { Folder } from "@/lib/db/queries/folders";
 import { TagInput } from "./TagInput";
 
 interface SnippetEditorFormProps {
   snippet?: Snippet | null;
   initialTags?: string[];
+  folders?: Folder[];
 }
 
 function getLanguageExtension(lang: string): Extension[] {
@@ -89,7 +91,7 @@ function getLanguageExtension(lang: string): Extension[] {
   }
 }
 
-export default function SnippetEditorForm({ snippet, initialTags = [] }: SnippetEditorFormProps) {
+export default function SnippetEditorForm({ snippet, initialTags = [], folders }: SnippetEditorFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -100,6 +102,7 @@ export default function SnippetEditorForm({ snippet, initialTags = [] }: Snippet
   const [code, setCode] = useState(snippet?.code ?? "");
   const [isPublic, setIsPublic] = useState(snippet?.isPublic ?? true);
   const [tags, setTags] = useState<string[]>(initialTags);
+  const [folderId, setFolderId] = useState<string | null>(snippet?.folderId ?? null);
 
   const [language, setLanguage] = useState(snippet?.language || "typescript");
 
@@ -117,7 +120,7 @@ export default function SnippetEditorForm({ snippet, initialTags = [] }: Snippet
 
   const isEditing = Boolean(snippet);
   const cancelHref = isEditing
-    ? `/dashboard/snippets/${snippet?.slug}`
+    ? `/dashboard/snippets/snippet/${snippet?.slug}`
     : "/dashboard";
   const colorClass =
     languageColors[language] || "bg-muted text-muted-foreground";
@@ -146,12 +149,13 @@ export default function SnippetEditorForm({ snippet, initialTags = [] }: Snippet
       code,
       isPublic,
       tags,
+      folderId,
     };
 
     try {
       if (snippet) {
         await updateSnippet(snippet.id, snippetPayload);
-        router.push(`/dashboard/snippets/${snippet.slug}`);
+        router.push(`/dashboard/snippets/snippet/${snippet.slug}`);
       } else {
         await createSnippet(snippetPayload);
         router.push("/dashboard");
@@ -248,6 +252,26 @@ export default function SnippetEditorForm({ snippet, initialTags = [] }: Snippet
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="folder">Folder</Label>
+              <Select
+                value={folderId ?? "none"}
+                onValueChange={(value) => setFolderId(value === "none" ? null : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="No folder" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No folder</SelectItem>
+                  {(folders ?? []).map((folder) => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

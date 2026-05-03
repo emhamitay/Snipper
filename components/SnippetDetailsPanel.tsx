@@ -157,7 +157,7 @@ export function SnippetDetailsPanel({
             {isDashboard && (
               <>
                 <Button variant="outline" asChild>
-                  <Link href={`/dashboard/snippets/${snippet.slug}/edit`}>
+                  <Link href={`/dashboard/snippets/snippet/${snippet.slug}/edit`}>
                     <Edit className="mr-2 h-4 w-4" />
                     Edit
                   </Link>

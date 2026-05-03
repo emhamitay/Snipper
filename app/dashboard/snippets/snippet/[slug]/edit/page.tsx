@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { getSnippetBySlug } from "@/lib/db/queries/snippets"
 import { getSnippetTags } from "@/lib/actions/tags"
+import { getFoldersByUserId } from "@/lib/actions/folders"
 
 export default async function EditSnippetPage({ params }: { params: Promise<{ slug: string }> }) {
   const session = await getServerSession(authOptions)
@@ -19,7 +20,10 @@ export default async function EditSnippetPage({ params }: { params: Promise<{ sl
     // ... logic below will handle it
   }
 
-  const tagsData = snippet ? await getSnippetTags(snippet.id) : []
+  const [tagsData, folders] = await Promise.all([
+    snippet ? getSnippetTags(snippet.id) : Promise.resolve([]),
+    getFoldersByUserId(),
+  ])
 
 
   if (!snippet) {
@@ -42,13 +46,13 @@ export default async function EditSnippetPage({ params }: { params: Promise<{ sl
     <div className="container mx-auto max-w-5xl px-4 py-8">
       {/* Back Button */}
       <Button variant="ghost" asChild className="mb-6 -ml-2">
-        <Link href={`/dashboard/snippets/${snippet.slug}`}>
+        <Link href={`/dashboard/snippets/snippet/${snippet.slug}`}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Snippet
         </Link>
       </Button>
 
-      <SnippetEditorForm snippet={snippet} initialTags={tagsData.map(t => t.name)} />
+      <SnippetEditorForm snippet={snippet} initialTags={tagsData.map(t => t.name)} folders={folders} />
     </div>
   )
 }
