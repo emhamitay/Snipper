@@ -1,6 +1,6 @@
 // בעה"י
 import Link from "next/link";
-import { Code2, LayoutDashboard } from "lucide-react";
+import { Code2, Compass, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/vercel/theme-toggle";
 import { authOptions } from "@/lib/auth";
@@ -20,6 +20,12 @@ export async function NavbarPublic() {
         </Link>
 
         <div className="flex items-center gap-2">
+          <Button variant="ghost" asChild>
+            <Link href="/explore">
+              <Compass className="mr-2 h-4 w-4" />
+              Explore
+            </Link>
+          </Button>
           <ThemeToggle />
           {session ? (
             <>

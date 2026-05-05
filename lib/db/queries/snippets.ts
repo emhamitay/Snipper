@@ -1,7 +1,7 @@
 // בעה"י
-import { snippets } from "../schema";
+import { snippets, users, likes, tags, snippetTags } from "../schema";
 import { db } from "../index"
-import { eq, and, ne, sql, isNull } from "drizzle-orm";
+import { eq, and, ne, sql, isNull, desc, or, ilike, inArray } from "drizzle-orm";
 import { create } from "domain";
 
 export type Snippet = typeof snippets.$inferSelect;
@@ -128,6 +128,98 @@ export async function getRootSnippetsByUserId(userId: string) {
     }).from(snippets).where(
         and(eq(snippets.userId, userId), isNull(snippets.folderId))
     );
+}
+
+export type PublicSnippetCardInfo = {
+    id: string;
+    title: string;
+    description: string | null;
+    language: string;
+    slug: string;
+    createdAt: Date;
+    username: string;
+    likeCount: number;
+};
+
+export type PublicSnippetSort = "newest" | "popular";
+
+interface GetPublicSnippetsParams {
+    limit: number;
+    offset?: number;
+    language?: string;
+    search?: string;
+    sort?: PublicSnippetSort;
+}
+
+export async function getPublicSnippets({
+    limit,
+    offset = 0,
+    language,
+    search,
+    sort = "newest",
+}: GetPublicSnippetsParams): Promise<PublicSnippetCardInfo[]> {
+    const conditions = [eq(snippets.isPublic, true)];
+
+    if (language) {
+        conditions.push(eq(snippets.language, language));
+    }
+
+    if (search && search.trim().length > 0) {
+        const term = `%${search.trim()}%`;
+        // Match snippets whose title/description matches OR whose tags match
+        const taggedSnippetIds = db
+            .select({ snippetId: snippetTags.snippetId })
+            .from(snippetTags)
+            .innerJoin(tags, eq(snippetTags.tagId, tags.id))
+            .where(ilike(tags.name, term));
+
+        const matchExpr = or(
+            ilike(snippets.title, term),
+            ilike(snippets.description, term),
+            inArray(snippets.id, taggedSnippetIds),
+        );
+        if (matchExpr) conditions.push(matchExpr);
+    }
+
+    const likeCountExpr = sql<number>`(select count(*)::int from ${likes} where ${likes.snippetId} = ${snippets.id})`;
+
+    const orderBy =
+        sort === "popular"
+            ? [desc(likeCountExpr), desc(snippets.createdAt)]
+            : [desc(snippets.createdAt)];
+
+    const rows = await db
+        .select({
+            id: snippets.id,
+            title: snippets.title,
+            description: snippets.description,
+            language: snippets.language,
+            slug: snippets.slug,
+            createdAt: snippets.createdAt,
+            username: users.username,
+            likeCount: likeCountExpr,
+        })
+        .from(snippets)
+        .innerJoin(users, eq(snippets.userId, users.id))
+        .where(and(...conditions))
+        .orderBy(...orderBy)
+        .limit(limit)
+        .offset(offset);
+
+    return rows;
+}
+
+export async function getFeaturedPublicSnippets(limit: number = 6): Promise<PublicSnippetCardInfo[]> {
+    return getPublicSnippets({ limit, sort: "newest" });
+}
+
+export async function getLikedSnippetIdsForUser(userId: string, snippetIds: string[]): Promise<Set<string>> {
+    if (snippetIds.length === 0) return new Set();
+    const rows = await db
+        .select({ snippetId: likes.snippetId })
+        .from(likes)
+        .where(and(eq(likes.userId, userId), inArray(likes.snippetId, snippetIds)));
+    return new Set(rows.map((r) => r.snippetId));
 }
 
 export async function setSnippetFolder(id: string, folderId: string | null) {

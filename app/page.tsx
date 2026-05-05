@@ -1,10 +1,17 @@
 // בעה"י
 import Link from "next/link"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { NavbarPublic } from "@/components/vercel/navbar-public"
 import { Footer } from "@/components/vercel/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FolderOpen, Paintbrush, Share2, Copy } from "lucide-react"
+import { FolderOpen, Paintbrush, Share2, Copy, ArrowRight, Compass } from "lucide-react"
+import {
+  getFeaturedPublicSnippets,
+  getLikedSnippetIdsForUser,
+} from "@/lib/db/queries/snippets"
+import { PublicSnippetCard } from "@/components/vercel/public-snippet-card"
 
 const features = [
   {
@@ -29,7 +36,14 @@ const features = [
   },
 ]
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const featured = await getFeaturedPublicSnippets(6)
+  const session = await getServerSession(authOptions)
+  const userId = session?.user?.id
+  const likedIds = userId
+    ? await getLikedSnippetIdsForUser(userId, featured.map((s) => s.id))
+    : new Set<string>()
+
   return (
     <div className="flex min-h-screen flex-col">
       <NavbarPublic />
@@ -52,6 +66,45 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* Explore Preview Section */}
+        {featured.length > 0 && (
+          <section className="border-t border-border/40">
+            <div className="container mx-auto max-w-6xl px-4 py-20">
+              <div className="mb-8 flex items-end justify-between gap-4">
+                <div>
+                  <div className="mb-2 inline-flex items-center gap-2 text-sm text-primary">
+                    <Compass className="h-4 w-4" />
+                    <span className="font-medium">Explore</span>
+                  </div>
+                  <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                    Fresh from the community
+                  </h2>
+                  <p className="mt-2 text-muted-foreground">
+                    A peek at the latest public snippets shared by other developers.
+                  </p>
+                </div>
+                <Button variant="outline" asChild className="shrink-0">
+                  <Link href="/explore">
+                    Explore all
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {featured.map((snippet) => (
+                  <PublicSnippetCard
+                    key={snippet.id}
+                    snippet={snippet}
+                    isLoggedIn={!!userId}
+                    isLiked={likedIds.has(snippet.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Features Section */}
         <section className="border-t border-border/40 bg-muted/30">

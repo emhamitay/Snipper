@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, Code2, Copy, ExternalLink, Plus } from "lucide-react";
+import { Check, Code2, Compass, Copy, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/vercel/theme-toggle";
 import LogoutButton from "../LogoutButton";
@@ -79,6 +79,13 @@ export function NavbarDashboard({ appOrigin }: NavbarDashboardProps) {
               </Button>
             </div>
           </div>
+
+          <Button variant="ghost" asChild>
+            <Link href="/explore">
+              <Compass className="mr-2 h-4 w-4" />
+              Explore
+            </Link>
+          </Button>
 
           <Button asChild>
             <Link href="/dashboard/snippets/new">
