@@ -1,5 +1,6 @@
 // בעה"י
 
+import { Suspense } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
@@ -11,6 +12,7 @@ import { getFolderBySlug } from "@/lib/db/queries/folders"
 import { db } from "@/lib/db"
 import { snippets } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
+import { SnippetListSkeleton } from "@/components/vercel/snippet-list-skeleton"
 
 export default async function FolderPage({
   params,
@@ -24,20 +26,6 @@ export default async function FolderPage({
   const folder = await getFolderBySlug(session.user.id, folderSlug)
 
   if (!folder) notFound()
-
-  const folderSnippets = await db.select({
-    id: snippets.id,
-    title: snippets.title,
-    description: snippets.description,
-    createdAt: snippets.createdAt,
-    language: snippets.language,
-    isPublic: snippets.isPublic,
-    slug: snippets.slug,
-  }).from(snippets).where(
-    and(eq(snippets.userId, session.user.id), eq(snippets.folderId, folder.id))
-  )
-
-  const uniqueLanguages = [...new Set(folderSnippets.map((s) => s.language))]
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
@@ -69,11 +57,6 @@ export default async function FolderPage({
               {folder.name}
             </h1>
           </div>
-          <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-            <span className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-sm text-muted-foreground">
-              {folderSnippets.length} {folderSnippets.length === 1 ? "snippet" : "snippets"}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -84,13 +67,36 @@ export default async function FolderPage({
             All snippets in this folder.
           </p>
         </div>
-        <SnippetList
-          snippets={folderSnippets}
-          languages={uniqueLanguages}
-          baseHref="/dashboard/snippets/snippet"
-          isDashboard
-        />
+        <Suspense fallback={<SnippetListSkeleton />}>
+          <FolderSnippets userId={session.user.id} folderId={folder.id} />
+        </Suspense>
       </div>
     </div>
+  )
+}
+
+async function FolderSnippets({ userId, folderId }: { userId: string; folderId: string }) {
+  const folderSnippets = await db.select({
+    id: snippets.id,
+    title: snippets.title,
+    description: snippets.description,
+    createdAt: snippets.createdAt,
+    language: snippets.language,
+    isPublic: snippets.isPublic,
+    slug: snippets.slug,
+    folderId: snippets.folderId,
+  }).from(snippets).where(
+    and(eq(snippets.userId, userId), eq(snippets.folderId, folderId))
+  )
+
+  const uniqueLanguages = [...new Set(folderSnippets.map((s) => s.language))]
+
+  return (
+    <SnippetList
+      snippets={folderSnippets}
+      languages={uniqueLanguages}
+      baseHref="/dashboard/snippets/snippet"
+      isDashboard
+    />
   )
 }

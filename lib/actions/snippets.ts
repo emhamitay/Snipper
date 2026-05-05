@@ -207,6 +207,34 @@ export async function deleteSnippet(id: string) {
   await query.deleteSnippet(id);
 }
 
+export async function moveSnippetToFolder(snippetId: string, folderId: string | null) {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const existing = await query.getSnippetById(snippetId);
+  if (!existing || existing.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  if (folderId) {
+    const folder = await import("../db/queries/folders").then((m) =>
+      m.getFolderById(folderId),
+    );
+    if (!folder || folder.userId !== userId) {
+      throw new Error("Folder not found");
+    }
+  }
+
+  if ((existing.folderId ?? null) === folderId) {
+    return;
+  }
+
+  await query.setSnippetFolder(snippetId, folderId);
+}
+
 export async function getPublicSnippetsByUserId(
   userId: string,
 ): Promise<Snippet[]> {

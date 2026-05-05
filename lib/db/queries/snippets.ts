@@ -92,6 +92,7 @@ export async function getSnippetsByUserId(userId: string) {
         language: snippets.language,
         isPublic: snippets.isPublic,
         slug: snippets.slug,
+        folderId: snippets.folderId,
     }).from(snippets).where(eq(snippets.userId, userId));
 }
 
@@ -123,7 +124,17 @@ export async function getRootSnippetsByUserId(userId: string) {
         language: snippets.language,
         isPublic: snippets.isPublic,
         slug: snippets.slug,
+        folderId: snippets.folderId,
     }).from(snippets).where(
         and(eq(snippets.userId, userId), isNull(snippets.folderId))
     );
+}
+
+export async function setSnippetFolder(id: string, folderId: string | null) {
+    const updatedAt = new Date();
+    return await db
+        .update(snippets)
+        .set({ folderId, updatedAt })
+        .where(eq(snippets.id, id))
+        .returning();
 }

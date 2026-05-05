@@ -1,5 +1,6 @@
 // בעה"י
 
+import { Suspense } from "react"
 import SnippetList from "@/components/SnippetList"
 import { DashboardActions } from "@/components/DashboardActions"
 import { getRootSnippetsByUserId, getSnippetCountsByFolderForUser } from "@/lib/db/queries/snippets"
@@ -7,20 +8,18 @@ import { getFoldersByUserId } from "@/lib/db/queries/folders"
 import { authOptions } from "@/lib/auth"
 import { getServerSession } from "next-auth"
 import { FolderCard } from "@/components/vercel/folder-card"
+import { SnippetListSkeleton } from "@/components/vercel/snippet-list-skeleton"
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id as string;
   const username = session?.user?.username
 
-  const [snippets, folders, folderCounts] = await Promise.all([
-    getRootSnippetsByUserId(userId),
+  const [folders, folderCounts] = await Promise.all([
     getFoldersByUserId(userId),
     getSnippetCountsByFolderForUser(userId),
   ])
 
-  const uniqueLanguages = [...new Set(snippets.map((s) => s.language))]
-  const totalSnippets = snippets.length
   const totalFolders = folders.length
 
   return (
@@ -40,9 +39,6 @@ export default async function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-            <span className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-sm text-muted-foreground">
-              {totalSnippets} {totalSnippets === 1 ? "snippet" : "snippets"}
-            </span>
             <span className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-sm text-muted-foreground">
               {totalFolders} {totalFolders === 1 ? "folder" : "folders"}
             </span>
@@ -89,13 +85,24 @@ export default async function DashboardPage() {
             Snippets not in any folder.
           </p>
         </div>
-        <SnippetList
-          snippets={snippets}
-          languages={uniqueLanguages}
-          baseHref="/dashboard/snippets/snippet"
-          isDashboard
-        />
+        <Suspense fallback={<SnippetListSkeleton />}>
+          <RootSnippets userId={userId} />
+        </Suspense>
       </div>
     </div>
+  )
+}
+
+async function RootSnippets({ userId }: { userId: string }) {
+  const snippets = await getRootSnippetsByUserId(userId)
+  const uniqueLanguages = [...new Set(snippets.map((s) => s.language))]
+
+  return (
+    <SnippetList
+      snippets={snippets}
+      languages={uniqueLanguages}
+      baseHref="/dashboard/snippets/snippet"
+      isDashboard
+    />
   )
 }

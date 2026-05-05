@@ -22,9 +22,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Eye, Lock, Globe, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { Eye, Lock, Globe, MoreHorizontal, Pencil, Trash2, FolderInput } from "lucide-react"
 import { type Snippet, languageColors } from "@/lib/languages"
 import { deleteSnippet } from "@/lib/actions/snippets"
+import { MoveToFolderDialog } from "@/components/vercel/move-to-folder-dialog"
 
 interface SnippetCardProps {
   snippet: Snippet
@@ -35,6 +36,7 @@ interface SnippetCardProps {
 export function SnippetCard({ snippet, href, showVisibility = false }: SnippetCardProps) {
   const router = useRouter()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const colorClass = languageColors[snippet.language] || "bg-muted text-muted-foreground"
 
@@ -92,6 +94,10 @@ className="relative z-20 h-7 w-7 opacity-0 group-hover:opacity-100 data-[state=o
                     Edit
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setShowMoveDialog(true)}>
+                  <FolderInput className="mr-2 h-4 w-4" />
+                  Move to folder
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   onSelect={() => setShowDeleteDialog(true)}
@@ -125,6 +131,13 @@ className="relative z-20 h-7 w-7 opacity-0 group-hover:opacity-100 data-[state=o
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <MoveToFolderDialog
+        open={showMoveDialog}
+        onOpenChange={setShowMoveDialog}
+        snippetId={snippet.id}
+        snippetTitle={snippet.title}
+        currentFolderId={snippet.folderId ?? null}
+      />
       <CardContent>
         <CardDescription className="line-clamp-2 mb-3 text-sm">
           {snippet.description}
