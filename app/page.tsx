@@ -50,68 +50,45 @@ export default async function LandingPage() {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="container mx-auto max-w-6xl px-4 py-24 md:py-32">
-          <div className="flex flex-col items-center text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
-              Your personal code{" "}
-              <span className="text-primary">snippet library</span>
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg text-muted-foreground text-pretty">
-              Save, organize, and share your code snippets. Access them from anywhere, with syntax highlighting and instant copy.
-            </p>
-            <div className="mt-10">
-              <Button size="lg" asChild>
-                <Link href="/register">Get Started</Link>
-              </Button>
+        <section className="relative overflow-hidden px-4 py-24 md:py-32">
+          <div className="absolute inset-0 -z-10 bg-dot opacity-[0.4]" />
+          <div className="container mx-auto max-w-6xl">
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-6 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary ring-1 ring-inset ring-primary/20">
+                v1.0 is live
+              </div>
+              <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl md:text-6xl">
+                Your personal code{" "}
+                <span className="text-primary">snippet library</span>
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg text-muted-foreground text-pretty">
+                Save, organize, and share your code snippets. Access them from anywhere, with syntax highlighting and instant copy.
+              </p>
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+                <Button size="lg" asChild>
+                  <Link href="/register">Get Started</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/explore">
+                    <Compass className="mr-2 h-4 w-4" />
+                    Browse Community
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Explore Preview Section */}
-        {featured.length > 0 && (
-          <section className="border-t border-border/40">
-            <div className="container mx-auto max-w-6xl px-4 py-20">
-              <div className="mb-8 flex items-end justify-between gap-4">
-                <div>
-                  <div className="mb-2 inline-flex items-center gap-2 text-sm text-primary">
-                    <Compass className="h-4 w-4" />
-                    <span className="font-medium">Explore</span>
-                  </div>
-                  <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                    Fresh from the community
-                  </h2>
-                  <p className="mt-2 text-muted-foreground">
-                    A peek at the latest public snippets shared by other developers.
-                  </p>
-                </div>
-                <Button variant="outline" asChild className="shrink-0">
-                  <Link href="/explore">
-                    Explore all
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {featured.map((snippet) => (
-                  <PublicSnippetCard
-                    key={snippet.id}
-                    snippet={snippet}
-                    isLoggedIn={!!userId}
-                    isLiked={likedIds.has(snippet.id)}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* Features Section */}
-        <section className="border-t border-border/40 bg-muted/30">
-          <div className="container mx-auto max-w-6xl px-4 py-24">
+        <section id="features" className="border-y border-border/40 bg-muted/30 py-24">
+          <div className="container mx-auto max-w-6xl px-4">
+            <div className="mb-12 text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Everything you need</h2>
+              <p className="mt-4 text-muted-foreground">Built for speed and efficiency.</p>
+            </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {features.map((feature) => (
-                <Card key={feature.title} className="border-border/40 bg-card/50">
+                <Card key={feature.title} className="border-border/40 bg-card/50 transition-colors hover:bg-card">
                   <CardHeader>
                     <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                       <feature.icon className="h-5 w-5 text-primary" />
@@ -124,6 +101,47 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* Explore Preview Section */}
+        {featured.length > 0 && (
+          <section className="relative overflow-hidden py-24">
+            <div className="absolute inset-0 -z-10 bg-grid opacity-[0.1]" />
+            <div className="container mx-auto max-w-6xl px-4">
+              <div className="mb-12 flex flex-col items-center text-center">
+                <div className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-primary uppercase tracking-wider">
+                  <Compass className="h-4 w-4" />
+                  Community
+                </div>
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  Discover what others are sharing
+                </h2>
+                <p className="mt-4 max-w-2xl text-muted-foreground">
+                  Join a growing library of public code snippets shared by developers worldwide.
+                </p>
+              </div>
+
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {featured.slice(0, 3).map((snippet) => (
+                  <PublicSnippetCard
+                    key={snippet.id}
+                    snippet={snippet}
+                    isLoggedIn={!!userId}
+                    isLiked={likedIds.has(snippet.id)}
+                  />
+                ))}
+              </div>
+              
+              <div className="mt-12 flex justify-center">
+                <Button variant="outline" size="lg" asChild>
+                  <Link href="/explore">
+                    Explore All Snippets
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* CTA Section */}
         <section className="border-t border-border/40">
