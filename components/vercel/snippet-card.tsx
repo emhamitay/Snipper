@@ -23,12 +23,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Eye, Lock, Globe, MoreHorizontal, Pencil, Trash2, FolderInput } from "lucide-react"
-import { type Snippet, languageColors } from "@/lib/languages"
+import { languageColors } from "@/lib/languages"
+import type { SnippetCardInfo } from "@/lib/db/queries/snippets"
 import { deleteSnippet } from "@/lib/actions/snippets"
 import { MoveToFolderDialog } from "@/components/vercel/move-to-folder-dialog"
 
 interface SnippetCardProps {
-  snippet: Snippet
+  snippet: SnippetCardInfo
   href: string
   showVisibility?: boolean
 }
@@ -59,11 +60,13 @@ export function SnippetCard({ snippet, href, showVisibility = false }: SnippetCa
         <span className="sr-only">View {snippet.title}</span>
       </Link>
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-base font-medium truncate">{snippet.title}</CardTitle>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-3">
+          <div className="min-w-0">
+            <CardTitle className="text-base font-medium leading-snug line-clamp-2 wrap-break-word">
+              {snippet.title}
+            </CardTitle>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
             {showVisibility && (
               <span className="text-muted-foreground">
                 {snippet.isPublic ? (
@@ -73,7 +76,7 @@ export function SnippetCard({ snippet, href, showVisibility = false }: SnippetCa
                 )}
               </span>
             )}
-            <Badge variant="secondary" className={`text-xs ${colorClass}`}>
+            <Badge variant="secondary" className={`max-w-36 truncate text-xs ${colorClass}`}>
               {snippet.language}
             </Badge>
             {/* z-20 to sit above the card's link overlay (z-10) */}
@@ -82,7 +85,8 @@ export function SnippetCard({ snippet, href, showVisibility = false }: SnippetCa
                 <Button
                   variant="ghost"
                   size="icon"
-className="relative z-20 h-7 w-7 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity"                >
+                  className="relative z-20 h-7 w-7 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 data-[state=open]:opacity-100"
+                >
                   <MoreHorizontal className="h-4 w-4" />
                   <span className="sr-only">Open menu</span>
                 </Button>
