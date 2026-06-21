@@ -4,6 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
+import { useTopProgress } from "@/components/top-progress";
 import CodeMirror from "@uiw/react-codemirror";
 import type { Extension } from "@codemirror/state";
 import { javascript } from "@codemirror/lang-javascript";
@@ -93,6 +95,7 @@ function getLanguageExtension(lang: string): Extension[] {
 
 export default function SnippetEditorForm({ snippet, initialTags = [], folders }: SnippetEditorFormProps) {
   const router = useRouter();
+  const { start, done } = useTopProgress();
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [titleStatus, setTitleStatus] = useState<AvailabilityStatus>(
@@ -139,6 +142,7 @@ export default function SnippetEditorForm({ snippet, initialTags = [], folders }
     }
     setSubmitError(null);
     setIsLoading(true);
+    start();
     const formData = new FormData(event.currentTarget);
     const title = (formData.get("title") as string | null) ?? "";
 
@@ -155,20 +159,24 @@ export default function SnippetEditorForm({ snippet, initialTags = [], folders }
     try {
       if (snippet) {
         await updateSnippet(snippet.id, snippetPayload);
+        toast.success("Snippet updated");
         router.push(`/dashboard/snippets/snippet/${snippet.slug}`);
       } else {
         await createSnippet(snippetPayload);
+        toast.success("Snippet created");
         router.push("/dashboard");
       }
     } catch (error) {
       console.error("Error saving snippet:", error);
-      setSubmitError(
+      const message =
         error instanceof Error
           ? error.message
-          : "Failed to save snippet. Please try again.",
-      );
+          : "Failed to save snippet. Please try again.";
+      setSubmitError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
+      done();
     }
   };
 
@@ -366,7 +374,8 @@ export default function SnippetEditorForm({ snippet, initialTags = [], folders }
         <div className="flex gap-3">
           <Button
             type="submit"
-            disabled={isLoading || titleStatus !== "available"}
+            loading={isLoading}
+            disabled={titleStatus !== "available"}
           >
             {isLoading ? "Saving..." : submitLabel}
           </Button>
