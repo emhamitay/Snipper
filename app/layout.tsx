@@ -4,8 +4,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/vercel/theme-provider";
 import "./globals.css";
-import { Provider } from "@radix-ui/react-toast";
 import { Providers } from "@/components/providers";
+import { TopProgress } from "@/components/top-progress";
+import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -45,7 +46,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Providers>{children}</Providers>
+          <Providers>
+            <TopProgress>{children}</TopProgress>
+          </Providers>
+          <Toaster />
         </ThemeProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
