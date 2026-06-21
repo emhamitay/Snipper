@@ -81,10 +81,13 @@ export function NavigationProgress() {
       start();
     }
 
-    document.addEventListener("click", onClick);
+    // Use the capture phase so this runs *before* Next.js <Link> calls
+    // event.preventDefault() during its bubble-phase click handler — otherwise
+    // the defaultPrevented guard would skip every internal navigation.
+    document.addEventListener("click", onClick, true);
     window.addEventListener("popstate", onPopState);
     return () => {
-      document.removeEventListener("click", onClick);
+      document.removeEventListener("click", onClick, true);
       window.removeEventListener("popstate", onPopState);
     };
   }, [start]);
